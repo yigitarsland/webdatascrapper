@@ -5,10 +5,11 @@ import smtplib
 import argparse
 from datetime import datetime
 import requests
+from bs4 import BeautifulSoup
 
 
 # Function to send e-mail using the university mail
-def sendEmail(emailSubject, body, config = 'config.json'):
+def sendEmail(emailSubject, body, config_file = 'config.json'):
     # Read config file
     with open(config, 'r') as file:
         config = json.load(file)
@@ -52,25 +53,49 @@ def getCatFacts(amount):
     else:
             print("Please specify the number of cat facts to retrieve.")
             
+# Function to report list of researchers of W4N PWr department with last names starting with a given letter.
+def fetchResearchers(letter):
+    url = f'https://wit.pwr.edu.pl/wydzial/struktura-organizacyjna/pracownicy?letter={letter}'
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        print(f"Failed to retrieve data for letter {letter}.")
+        return 
+    
+    soup = BeautifulSoup(response.text, 'html.parser')
+    researchers = []
+
+   # Assuming the structure of the HTML contains researcher details in a certain tag
+    # This might need adjustments based on the actual structure of the webpage
+    researcher_entries = soup.find_all('div', class_='researcher-entry')  # Example class name
+    for entry in researcher_entries:
+        name = entry.find('h3').text.strip()
+        email_tag = entry.find('a', href=lambda href: href and "mailto:" in href)
+        email = email_tag.text.strip() if email_tag else 'No email available'
+        researchers.append(f"{name} - {email}")
+        
+    if not researchers:
+        print(f"No researchers found with the last name starting with '{letter}'.")
+    else:
+        print(f"The list of researchers - {letter}")
+        for researcher in researchers:
+            print(researcher)
+
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Send an e-mail to your teacher or get random cat facts.')
     parser.add_argument('--mail', type=str, help='The content of the e-mail')
-    parser.add_argument("--catfacts", type=int, help="Number of cat facts to retrieve")
+    parser.add_argument("--catfacts", type= int, help="Number of cat facts to retrieve")
+    parser.add_argument('--fetchresearchers', type=str, help="Letter of the targeted surname")
     args = parser.parse_args()
 
-    if args.mail and not args.catfacts:  # If --mail is provided but not --catfacts
+    if args.mail:
         emailBody = args.mail
         currentdatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         emailSubject = f'Message sent on {currentdatetime}'
         sendEmail(emailSubject, emailBody)
-    elif args.catfacts and not args.mail:  # If --catfacts is provided but not --mail
+    elif args.catfacts:
         getCatFacts(args.catfacts)
-    elif args.mail and args.catfacts:  # If both --mail and --catfacts are provided
-        emailBody = args.mail
-        currentdatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        emailSubject = f'Message sent on {currentdatetime}'
-        sendEmail(emailSubject, emailBody)
-        getCatFacts(args.catfacts)
-    else:
-        print("Please provide either --mail or --catfacts argument.")
+    elif args.fetchresearchers:
+        fetchResearchers(args.fetchresearchers)
