@@ -37,25 +37,40 @@ def sendEmail(emailSubject, body, config = 'config.json'):
     except Exception as ex:
         print(f'Failed to send e-mail: {ex}.')
 
-def getCatFacts(numFacts):
-    url = 'https://cat-fact.herokuapp.com'
-    response = requests.get(url)
-    facts = response.json()
-    print('Here are some cat facts:')
-    for fact in facts:
-        print(fact['text'])
+def getCatFacts(amount):
+    url = 'https://cat-fact.herokuapp.com/facts/random'
+    params = {
+        "animal_type": "cat",
+        "amount": amount
+    }
+    response = requests.get(url, params=params)
+
+    if response.status_code == 200:
+        data = response.json() # Parse json response directly
+        for fact in data:
+            print(fact['text'])
+    else:
+            print("Please specify the number of cat facts to retrieve.")
+            
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Send an e-mail to your teacher or get random cat facts.')
-    parser.add_argument('--mail', type=str, required=True, help='The content of the e-mail')
-    parser.add_argument("--catfacts", type=int, help="Number of cat facts to print")
+    parser.add_argument('--mail', type=str, help='The content of the e-mail')
+    parser.add_argument("--catfacts", type=int, help="Number of cat facts to retrieve")
     args = parser.parse_args()
-    if args.mail:
-        emailBody = args.mail # Get the content of the --mail argument
+
+    if args.mail and not args.catfacts:  # If --mail is provided but not --catfacts
+        emailBody = args.mail
         currentdatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         emailSubject = f'Message sent on {currentdatetime}'
         sendEmail(emailSubject, emailBody)
-    if args.catfacts:
+    elif args.catfacts and not args.mail:  # If --catfacts is provided but not --mail
+        getCatFacts(args.catfacts)
+    elif args.mail and args.catfacts:  # If both --mail and --catfacts are provided
+        emailBody = args.mail
+        currentdatetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        emailSubject = f'Message sent on {currentdatetime}'
+        sendEmail(emailSubject, emailBody)
         getCatFacts(args.catfacts)
     else:
-        print("Please provide the number of cat facts to print using --cat-facts")
+        print("Please provide either --mail or --catfacts argument.")
