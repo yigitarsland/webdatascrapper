@@ -17,12 +17,13 @@ def sendEmail(emailSubject, body, config = 'config.json'):
     username = config['username']
     password = config['password']
     smtpServer = config['smtpServer']
+    senderName = config['senderName']
 
     # Create e-mail message
     msg = MIMEMultipart()
-    msg['From'] = username
-    msg['To'] = 'yigitarsland@icloud.com' 
-    msg['Subject'] = 'Yigit Arslan ' + emailSubject
+    msg['From'] = f'{senderName} <{username}>'
+    msg['To'] = 'wojciech.thomas@pwr.edu.pl' 
+    msg['Subject'] = emailSubject
 
     # Attach e-mail body
     msg.attach(MIMEText(body, 'plain'))
