@@ -65,12 +65,10 @@ def fetchResearchers(letter):
     soup = BeautifulSoup(response.text, 'html.parser')
     researchers = []
 
-   # Assuming the structure of the HTML contains researcher details in a certain tag
-    # This might need adjustments based on the actual structure of the webpage
-    researcher_entries = soup.find_all('div', class_='researcher-entry')  # Example class name
+    researcher_entries = soup.find_all('div', class_='col-text text-content')  # Example class name
     for entry in researcher_entries:
-        name = entry.find('h3').text.strip()
-        email_tag = entry.find('a', href=lambda href: href and "mailto:" in href)
+        name = entry.find('a').text.strip()
+        email_tag = entry.find('p')
         email = email_tag.text.strip() if email_tag else 'No email available'
         researchers.append(f"{name} - {email}")
         
