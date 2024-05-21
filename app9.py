@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 
 # Function to send e-mail using the university mail
-def sendEmail(emailSubject, body, config_file = 'config.json'):
+def sendEmail(emailSubject, body, config = 'config.json'):
     # Read config file
     with open(config, 'r') as file:
         config = json.load(file)
@@ -21,8 +21,8 @@ def sendEmail(emailSubject, body, config_file = 'config.json'):
     # Create e-mail message
     msg = MIMEMultipart()
     msg['From'] = username
-    msg['To'] = 'wojciech.thomas@pwr.edu.pl' 
-    msg['Subject'] = emailSubject
+    msg['To'] = 'yigitarsland@icloud.com' 
+    msg['Subject'] = 'Yigit Arslan ' + emailSubject
 
     # Attach e-mail body
     msg.attach(MIMEText(body, 'plain'))
@@ -65,7 +65,7 @@ def fetchResearchers(letter):
     soup = BeautifulSoup(response.text, 'html.parser')
     researchers = []
 
-    researcher_entries = soup.find_all('div', class_='col-text text-content')  # Example class name
+    researcher_entries = soup.find_all('div', class_='col-text text-content') 
     for entry in researcher_entries:
         name = entry.find('a').text.strip()
         email_tag = entry.find('p')
